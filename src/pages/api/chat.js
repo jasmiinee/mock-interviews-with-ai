@@ -41,10 +41,16 @@ export default async function handler(req, res) {
 
     sessionResponse.chatResponse = chatCompletion.choices;
 
-    res.status(200).json({
+    const response = {
       ...sessionResponse,
       textResponse: aiResponse,
-    });
+    };
+    
+    console.log("API sending response:", JSON.stringify(response, null, 2));
+    console.log("Messages in response:", response.messages.length);
+    console.log("Last message:", response.messages[response.messages.length - 1]);
+    
+    res.status(200).json(response);
 
 
   } catch (err) {

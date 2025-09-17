@@ -333,20 +333,41 @@ function Console({
               stop();
               return;
             }
+            
+            console.log("Successfully received response:", response);
+            console.log("Response messages:", response.messages);
+            console.log("Last message content:", response.messages[response.messages.length - 1]?.content);
+            console.log("AIRecordingIndex:", AIRecordingIndex);
+            console.log("audio is null:", audio === null);
+            
             if (audio != null) {
+              // For audio input, update both user transcription and AI response
+              console.log("Processing audio input");
               sessionMessages.current[userRecordingIndex - 1].loading = false;
               sessionMessages.current[userRecordingIndex - 1].content =
                 response.messages[response.messages.length - 2].content;
+              sessionMessages.current[AIRecordingIndex - 1].loading = false;
+              sessionMessages.current[AIRecordingIndex - 1].content =
+                response.messages[response.messages.length - 1].content;
+            } else {
+              // For text input, only update the AI response
+              // The user message was already added by insertMessage before process() was called
+              console.log("Processing text input");
+              console.log("Before update - AI message:", sessionMessages.current[AIRecordingIndex - 1]);
+              sessionMessages.current[AIRecordingIndex - 1].loading = false;
+              sessionMessages.current[AIRecordingIndex - 1].content =
+                response.messages[response.messages.length - 1].content;
+              console.log("After update - AI message:", sessionMessages.current[AIRecordingIndex - 1]);
             }
-            sessionMessages.current[AIRecordingIndex - 1].loading = false;
-            sessionMessages.current[AIRecordingIndex - 1].content =
-              response.messages[response.messages.length - 1].content;
             sessionMessages.current[AIRecordingIndex - 1].audio =
               response.audio;
             sessionMessages.current[AIRecordingIndex - 1].onEnded = turnUser;
             const messageIndex = AIRecordingIndex - 1;
-            playAudio(messageIndex, turnUser);
+            // playAudio(messageIndex, turnUser); // Temporarily commented out - function not defined
             setCurrentAIAudio(messageIndex);
+            console.log("Calling setRerender, current rerender value:", rerender);
+            setRerender(rerender + 1);
+            console.log("setRerender called, new value should be:", rerender + 1);
           })
           .catch((error) => {
             console.log("Error: ", error.message);

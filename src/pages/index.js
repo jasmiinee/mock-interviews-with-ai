@@ -34,7 +34,7 @@ export default function Home() {
   // audioRefs is an array of refs to the audio elements that are used to play audio samples, it's filled with nulls to prevent errors
   const audioRefs = useRef(Array(512).fill(null));
 
-  // sessionMessages is an array of objects that contain the messages that are displayed in the console and sent to the chatGPT API
+  // sessionMessages is an array of objects that contain the messages that are displayed in the console and sent to the API
   const sessionMessages = useRef([introduction()]);
 
   // detecitonSettings is an object that contains the settings for the detection of the user's voice. activityDetection is a boolean that is true if the user has the setting enabled. activityDetectionThreshold is a number that is the threshold for the detection of the user's voice
@@ -46,7 +46,7 @@ export default function Home() {
   // promptOpen determines whether the prompt edit box is open
   const [promptOpen, setPromptOpen] = useState(false);
 
-  // activityDetection stores state for the microphone & it's associated color change, 0 = no activity, 1 = ready to record, 2- = recording, 4 - disabled
+  // activityDetection stores state for the microphone & it's associated color change, 0 = no activity, 1 = ready to record, 2 = recording, 4 = disabled
   const [activityDetection, setActivityDetection] = useState(0);
 
   // This goes in the input field for user to type in their job description

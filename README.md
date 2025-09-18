@@ -14,15 +14,13 @@ Ensure that you have the following prerequisites installed and set up on your sy
 
 1. **Node.js**: The application is built using Node.js, so you need to have it installed on your machine. You can download the latest version of Node.js from the [official website](https://nodejs.org/).
 
-2. **Amazon AWS Polly API Key**: The voice output feature of the application utilizes Amazon AWS Polly, a text-to-speech service. To use AWS Polly, sign up for an AWS account, and follow the steps to create an IAM user with the required permissions. Once you have your IAM user, set up your AWS credentials in the `.env` file of the application. You can refer to the [official AWS Polly documentation](https://docs.aws.amazon.com/polly/latest/dg/get-started-quick.html) for more information.
-
-3. **OpenAI API Key**: The application requires an OpenAI API key for AI integration (Chat-GPT and Whisper Transcription). Sign up for an OpenAI account and obtain an API key from the [OpenAI Developer Dashboard](https://beta.openai.com/signup/). Once you have your API key, set it up in the `.env` file of the application.
+2. **Groq API Key**: The application requires an Groq API key for AI integration (`llama-3.3-70b-versatile`). Sign up for an Groq account and obtain an API key from the [Groq Cloud Console](https://console.groq.com/home). Once you have your API key, set it up in the `.env` file of the application.
 
 ## Getting Started
 
 ```bash
 # Clone repository
-git clone https://github.com/darrylschaefer/mock-interviews-with-ai
+git clone https://github.com/jasmiinee/mock-interviews-with-ai
 
 # Change directory
 cd mock-interviews-with-ai
@@ -31,9 +29,7 @@ cd mock-interviews-with-ai
 npm install
 
 # Add API keys to .env in root folder
-AMAZON_AWS_POLLY_ACCESS_KEY=
-AMAZON_AWS_POLLY_SECRET_KEY=
-OPENAI_API_KEY=
+GROQ_API_KEY=
 
 # Build app
 npm run build
@@ -72,7 +68,7 @@ Start your internet browser, and type in the address: http://localhost:3000
 Find the options menu below the console with these available features:
 
 - **Abandon Session**: Reset the session
-- **Voices**: Change the AWS Polly voice
+- **Voices**: Change the default browser voice
 - **Question Types**: The types of job interview questions you'll be asked. All selected by default.
 - **Personality Type**: The type of personality that the interviewer will have.
 - **Automatic Detection**: Sets recording mode to standby after AI finishes playing their audio prompt. If you turn this off, you will have to click the Microphone button after the AI has spoken in order to set the Mic to standby and begin a recording.

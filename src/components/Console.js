@@ -34,46 +34,83 @@ function Console({
   setPreprocessedJobDescription: setPreprocessedJobDescription,
   interviewSettings: interviewSettings,
 }) {
-  // Joanna, Kendra, Kimberly, Salli, Joey, Matthew, Ruth, Stephen
-  const voiceNames = {
-    label: "Amazon Polly",
+  // browser voices for Web Speech API
+  const [availableVoices, setAvailableVoices] = useState([]);
+  const [voiceNames, setVoiceNames] = useState({
+    label: "Browser Voice",
     options: [
       {
-        label: "Joanna",
-        value: "Joanna",
+        label: "Default",
+        value: "default",
       },
-      {
-        label: "Kendra",
-        value: "Kendra",
-      },
-      {
-        label: "Kimberly",
-        value: "Kimberly",
-      },
-      {
-        label: "Salli",
-        value: "Salli",
-      },
-      {
-        label: "Joey",
-        value: "Joey",
-      },
-      {
-        label: "Matthew",
-        value: "Matthew",
-      },
-      {
-        label: "Ruth",
-        value: "Ruth",
-      },
-      {
-        label: "Stephen",
-        value: "Stephen",
-      },
-    ],
-  };
+    ]
+  });
+  
+  const voiceId = useRef("default");
 
-  const voiceId = useRef(voiceNames.options[0].value);
+  // load browser voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices();
+      const voiceOptions = voices.map((voice, index) => ({
+        label: `${voice.name} (${voice.lang})`,
+        value: voice.name,
+      }));
+
+      setVoiceNames({
+        label: "Browser Voice",
+        options: [
+          {
+            label: "Default",
+            value: "default",
+          },
+          ...voiceOptions,
+        ],
+      });
+      setAvailableVoices(voices);
+    };
+
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  // text to speech function by web
+  function speakText(text, onEnd) {
+    if ('speechSynthesis' in window) {
+      // cancel any ongoing speech
+      speechSynthesis.cancel();
+      // set the voice
+      const utterance = new SpeechSynthesisUtterance(text);
+      if (voiceId.current !== "default" && availableVoices.length > 0) {
+        const selectedVoice = availableVoices.find(voice => voice.name === voiceId.current);
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+        }
+      }
+
+      // speech parameters
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      // handle speech end
+      utterance.onend = onEnd;
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event.error);
+        if (onEnd) onEnd();
+      }
+
+      // speak the text
+      speechSynthesis.speak(utterance);
+    } else {
+      console.warn('Speech synthesis not supported');
+      if (onEnd) onEnd();
+    }
+  }
 
   function handleTextSubmit(event) {
     event.preventDefault();
@@ -260,7 +297,6 @@ function Console({
       });
 
       // Fetch
-
       try {
         fetch("/api/chat", {
           method: "POST",
@@ -297,20 +333,41 @@ function Console({
               stop();
               return;
             }
+            
+            console.log("Successfully received response:", response);
+            console.log("Response messages:", response.messages);
+            console.log("Last message content:", response.messages[response.messages.length - 1]?.content);
+            console.log("AIRecordingIndex:", AIRecordingIndex);
+            console.log("audio is null:", audio === null);
+            
             if (audio != null) {
+              // For audio input, update both user transcription and AI response
+              console.log("Processing audio input");
               sessionMessages.current[userRecordingIndex - 1].loading = false;
               sessionMessages.current[userRecordingIndex - 1].content =
                 response.messages[response.messages.length - 2].content;
+              sessionMessages.current[AIRecordingIndex - 1].loading = false;
+              sessionMessages.current[AIRecordingIndex - 1].content =
+                response.messages[response.messages.length - 1].content;
+            } else {
+              // For text input, only update the AI response
+              // The user message was already added by insertMessage before process() was called
+              console.log("Processing text input");
+              console.log("Before update - AI message:", sessionMessages.current[AIRecordingIndex - 1]);
+              sessionMessages.current[AIRecordingIndex - 1].loading = false;
+              sessionMessages.current[AIRecordingIndex - 1].content =
+                response.messages[response.messages.length - 1].content;
+              console.log("After update - AI message:", sessionMessages.current[AIRecordingIndex - 1]);
             }
-            sessionMessages.current[AIRecordingIndex - 1].loading = false;
-            sessionMessages.current[AIRecordingIndex - 1].content =
-              response.messages[response.messages.length - 1].content;
             sessionMessages.current[AIRecordingIndex - 1].audio =
               response.audio;
             sessionMessages.current[AIRecordingIndex - 1].onEnded = turnUser;
             const messageIndex = AIRecordingIndex - 1;
-            playAudio(messageIndex, turnUser);
+            // playAudio(messageIndex, turnUser); // Temporarily commented out - function not defined
             setCurrentAIAudio(messageIndex);
+            console.log("Calling setRerender, current rerender value:", rerender);
+            setRerender(rerender + 1);
+            console.log("setRerender called, new value should be:", rerender + 1);
           })
           .catch((error) => {
             console.log("Error: ", error.message);
@@ -459,11 +516,6 @@ function Console({
       };
     }
 
-    function playAudio(messageIndex) {
-      if (stopped) return;
-      setPlayQueue([...playQueue, messageIndex]);
-    }
-
     return {
       stop: stop,
       recorder: recorder,
@@ -476,34 +528,9 @@ function Console({
     setTextInput(event.target.value);
   };
 
-  useEffect(() => {
-    if (playQueue !== null && audioRefs.current[playQueue]) {
-      if (currentAudio) {
-        currentAudio.pause();
-        setCurrentAudio(null);
-      }
-      setCurrentAudio(audioRefs.current[playQueue]);
-      audioRefs.current[playQueue].play();
-      setPlayQueue([]);
-    }
-  }, [playQueue, audioRefs, currentAudio, setCurrentAudio, setPlayQueue]);
-
-  // handleTogglePlay handles audio clicks when the click originates from the audio element
-
-  const handleTogglePlay = (index) => {
-    // If there is an audio element currently playing, pause it, and set this one as the current audio element
-    if (currentAudio && currentAudio !== audioRefs.current[index]) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-      setCurrentAudio(null);
-    }
-    audioRefs.current[index].currentTime = 0;
-    setCurrentAudio(audioRefs.current[index]);
-  };
-
   const scrollableRef = useRef(null);
 
-  //scroll to bottom of div
+  // scroll to bottom of div
   if (scrollableRef.current !== null) {
     scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
   }
@@ -560,32 +587,6 @@ function Console({
                       <>User:&nbsp;{message.content}</>
                     )}
                   </span>
-                  {message.audio && (
-                    <>
-                      <audio
-                        className={styles.Audio}
-                        controls
-                        ref={(audio) => {
-                          audioRefs.current[index] = audio;
-                        }}
-                        onEnded={() => {
-                          // Set an if event to check if there's a function on message.audio.onEnded, and if so, call it
-                          if (message.onEnded) {
-                            message.onEnded();
-                            // clear the onEnded function
-                            message.onEnded = null;
-                          }
-                        }}
-                        style={{ display: "block" }}
-                        onPlay={() => handleTogglePlay(index)}
-                      >
-                        <source
-                          src={message.audio.audioDataURI}
-                          type={message.audio.ContentType}
-                        />
-                      </audio>
-                    </>
-                  )}
                 </div>
               );
             }
@@ -600,32 +601,6 @@ function Console({
                       <>Interviewer:&nbsp;{message.content}</>
                     )}
                   </span>
-                  {message.audio && (
-                    <>
-                      <audio
-                        className={styles.Audio}
-                        controls
-                        ref={(audio) => {
-                          audioRefs.current[index] = audio;
-                        }}
-                        onEnded={() => {
-                          // Set an if event to check if there's a function on message.audio.onEnded, and if so, call it
-                          if (message.onEnded) {
-                            message.onEnded();
-                            // clear the onEnded function
-                            message.onEnded = null;
-                          }
-                        }}
-                        style={{ display: "block" }}
-                        onPlay={() => handleTogglePlay(index)}
-                      >
-                        <source
-                          src={message.audio.audioDataURI}
-                          type={message.audio.ContentType}
-                        />
-                      </audio>
-                    </>
-                  )}
                 </div>
               );
             }
@@ -645,32 +620,6 @@ function Console({
                       )}
                     </i>
                   </span>
-                  {message.audio && (
-                    <>
-                      <audio
-                        className={styles.Audio}
-                        controls
-                        ref={(audio) => {
-                          audioRefs.current[index] = audio;
-                        }}
-                        onEnded={() => {
-                          // Set an if event to check if there's a function on message.audio.onEnded, and if so, call it
-                          if (message.onEnded) {
-                            message.onEnded();
-                            // clear the onEnded function
-                            message.onEnded = null;
-                          }
-                        }}
-                        style={{ display: "block" }}
-                        onPlay={() => handleTogglePlay(index)}
-                      >
-                        <source
-                          src={message.audio.audioDataURI}
-                          type={message.audio.ContentType}
-                        />
-                      </audio>
-                    </>
-                  )}
                 </div>
               );
             }

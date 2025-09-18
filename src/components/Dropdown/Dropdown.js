@@ -88,7 +88,7 @@ const Dropdown = ({
                 alignOffset={-5}
               >
                 <DropdownMenu.Label className={styles.DropdownMenuLabel}>
-                  Amazon Polly
+                  Browser Voices  
                 </DropdownMenu.Label>
 
                 {voiceNames.options.map((name, i) => (

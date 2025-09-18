@@ -1,23 +1,9 @@
 export default async function handler(req, res) {
   let tempMessages = [];
-  if (process.env.OPENAI_API_KEY.length < 1) {
+  if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY.length < 1) {
     tempMessages.push({
       role: "assistant",
-      content: "Please set your OpenAI API key in the .env file.",
-    });
-  }
-
-  if (process.env.AMAZON_AWS_POLLY_ACCESS_KEY.length < 1) {
-    tempMessages.push({
-      role: "assistant",
-      content: "Please set your Amazon AWS Polly access key in the .env file.",
-    });
-  }
-
-  if (process.env.AMAZON_AWS_POLLY_SECRET_KEY.length < 1) {
-    tempMessages.push({
-      role: "assistant",
-      content: "Please set your Amazon AWS Polly secret key in the .env file.",
+      content: "Please set your GROQ_API_KEY in the .env file.",
     });
   }
 

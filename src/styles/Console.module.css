@@ -39,9 +39,22 @@
     margin-top:18px;
 }
 
-.Text
+.UserText
 {
     flex-grow:1;
+    color: beige;
+}
+
+.AssistantText
+{
+    flex-grow:1;
+    color: lightblue;
+}
+
+.SystemText
+{
+    flex-grow:1;
+    color: lightcoral;
 }
 
 .Audio

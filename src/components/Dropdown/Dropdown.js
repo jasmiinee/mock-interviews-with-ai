@@ -100,6 +100,7 @@ const Dropdown = ({
                       voiceId.current = name.label;
                       setRerender(rerender + 1);
                     }}
+                    closeOnSelect={false}
                   >
                     <DropdownMenu.ItemIndicator
                       className={styles.DropdownMenuItemIndicator}
@@ -124,6 +125,7 @@ const Dropdown = ({
               key={i}
               className={styles.DropdownMenuCheckboxItem}
               checked={type.enabled}
+              onSelect={event => event.preventDefault()}
               onCheckedChange={(value) => {
                 interviewSettings.current.questionTypes[i].enabled = value;
                 setRerender(rerender + 1);
@@ -149,6 +151,7 @@ const Dropdown = ({
               key={i}
               className={styles.DropdownMenuCheckboxItem}
               checked={type.enabled}
+              onSelect={event => event.preventDefault()}
               onCheckedChange={(value) => {
                 // set all personality options to false
                 interviewSettings.current.personalityOptions.forEach(
@@ -160,6 +163,7 @@ const Dropdown = ({
                 interviewSettings.current.personalityOptions[i].enabled = true;
                 setRerender(rerender + 1);
               }}
+              closeOnSelect={false}
             >
               <DropdownMenu.ItemIndicator
                 className={styles.DropdownMenuItemIndicator}
@@ -175,11 +179,13 @@ const Dropdown = ({
           <DropdownMenu.CheckboxItem
             className={styles.DropdownMenuCheckboxItem}
             checked={detectionSettings.current.activityDetection}
+            onSelect={event => event.preventDefault()}
             onCheckedChange={(value) => {
               detectionSettings.current.activityDetection = value;
               console.log(value);
               setRerender(rerender + 1);
             }}
+            closeOnSelect={false}
           >
             <DropdownMenu.ItemIndicator
               className={styles.DropdownMenuItemIndicator}

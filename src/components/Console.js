@@ -202,13 +202,13 @@ function Console({
     let jobDescription = preprocessedJobDescription;
     if (jobDescription.length == 0) {
       jobDescription =
-        "Blank, kindly remind the user to follow complete instructions and then ask the user for a job description";
+        "\nBlank, kindly remind the user to follow complete instructions and then ask the user for a job description";
     }
 
     const prompt = [
       {
         role: "system",
-        content: `${interviewerPrompt} ${interviewerPersonality} ${interviewerQuestions} Limit your responses to 3 sentences. Do not respond with lists or ask multiple questions at once. End every response with a question to keep the conversation going. You are interviewing a candidate for the following position: ${jobDescription}.`,
+        content: `${interviewerPrompt} ${interviewerPersonality} ${interviewerQuestions} Limit your responses to 3 sentences. Do not respond with lists or ask multiple questions at once. End every response with a question to keep the conversation going. You are interviewing a candidate for the following position:\n${jobDescription}.`,
       },
     ];
 
@@ -253,10 +253,10 @@ function Console({
       }
 
       function clear() {
-        if(currentRecording != null){
+        if (currentRecording != null) {
           currentRecording.cancel();
-        currentRecording = null;
-      }
+          currentRecording = null;
+        }
       }
 
       return {
@@ -552,7 +552,7 @@ function Console({
             if (message.role === "welcome") {
               return (
                 <div className={styles.Message} key={index}>
-                  <span className={styles.Text}>
+                  <span className={styles.SystemText}>
                     Introduction: Prepare for your mock interview session with
                     AI!
                     <br></br>
@@ -578,7 +578,7 @@ function Console({
             if (message.role === "user") {
               return (
                 <div className={styles.Message} key={index}>
-                  <span className={styles.Text}>
+                  <span className={styles.UserText}>
                     {message.loading ? (
                       <span>
                         <i>Your message is being transcribed.</i>
@@ -594,7 +594,7 @@ function Console({
             if (message.role === "assistant") {
               return (
                 <div className={styles.Message} key={index}>
-                  <span className={styles.Text}>
+                  <span className={styles.AssistantText}>
                     {message.loading ? (
                       <i>Interviewer's response is being generated.</i>
                     ) : (
@@ -608,7 +608,7 @@ function Console({
             if (message.role === "system") {
               return (
                 <div className={styles.Message} key={index}>
-                  <span className={styles.Text}>
+                  <span className={styles.SystemText}>
                     <i>
                       Prompt:&nbsp;
                       {message.loading ? (
